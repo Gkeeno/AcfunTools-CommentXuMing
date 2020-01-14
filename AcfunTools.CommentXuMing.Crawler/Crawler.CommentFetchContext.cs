@@ -85,7 +85,7 @@ namespace AcfunTools.CommentXuMing.Crawler
                 var tasks_leftPage = from ipage in Enumerable.Range(2, totalPageCount - 1)
                                      select Task.Run(async () =>
                                      {
-                                         var comments_curPage = await FetchCommentsJson(ArticleInfo.AcNo, ipage + "");
+                                         var comments_curPage = await FetchCommentsJson(ArticleInfo.AcNo, ipage.ToString());
                                          var commentInfosRaw_curPage = comments_curPage["commentsMap"].ToString();
                                          UpdateComments(commentInfosRaw_curPage);
                                      });
