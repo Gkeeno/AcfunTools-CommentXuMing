@@ -131,25 +131,6 @@ namespace AcfunTools.CommentXuMing.Crawler
                     {
                         _excludeCommentIds.TryAdd(commentInfoKey, true);
                     }
-                    //else
-                    //{
-                    //    var targetComment = new CommentData
-                    //    {
-                    //        AcNo = ArticleInfo.AcNo,
-                    //        Content = (string)commentInfo["content"],
-                    //        Floor = (int)commentInfo["floor"],
-                    //        ReleaseTime = ((long)commentInfo["timestamp"]).ToDateTime(),
-                    //        UserInfo = new UserInfo
-                    //        {
-                    //            AvatarImageUrl = (string)commentInfo["headUrl"]?.AsEnumerable().FirstOrDefault()?["url"],
-                    //            Id = (long)commentInfo["userId"],
-                    //            Name = (string)commentInfo["userName"],
-                    //        },
-                    //        CId = (int)commentInfo["cid"],
-                    //        RawData = commentInfo.ToString()
-                    //    };
-                    //    OnFindTargetComments?.Invoke(ArticleInfo, comments_target);
-                    //}
                 }
                 else // 已有记录的评论
                 {
@@ -157,26 +138,13 @@ namespace AcfunTools.CommentXuMing.Crawler
                     // 评论是否原来已失效
                     if (IsUnAvaliableCommment(commentInfo) && !_excludeCommentIds.ContainsKey(commentInfoKey))
                     {
-                         _comments.TryGetValue(commentInfoKey,out commentInfo);
                         // 找到目标评论内容已删除的，以触发目标事件
-                        var targetComment = new CommentData
-                        {
-                            AcNo = ArticleInfo.AcNo,
-                            Content = (string)commentInfo["content"],
-                            Floor = (int)commentInfo["floor"],
-                            ReleaseTime = ((long)commentInfo["timestamp"]).ToDateTime(),
-                            UserInfo = new UserInfo
-                            {
-                                AvatarImageUrl = (string)commentInfo["headUrl"]?.AsEnumerable().FirstOrDefault()?["url"],
-                                Id = (long)commentInfo["userId"],
-                                Name = (string)commentInfo["userName"],
-                            },
-                            CId = (int)commentInfo["cid"],
-                            RawData = commentInfo.ToString()
-                        };
+                        _comments.TryGetValue(commentInfoKey, out commentInfo);
+                        var targetComment = ResovleToComment(commentInfo);
+                        _excludeCommentIds.TryAdd(commentInfoKey, true);
+
                         Console.WriteLine("[CommentFetchContext][找到目标评论] name##{0} ==== floor##{1} ==== content##{2}", targetComment.UserInfo.Name, targetComment.Floor, targetComment.Content);
 
-                        _excludeCommentIds.TryAdd(commentInfoKey, true);
                         comments_target.Add(targetComment);
                     }
                 }
@@ -197,12 +165,27 @@ namespace AcfunTools.CommentXuMing.Crawler
         private bool IsUnAvaliableCommment(JObject comment)
         {
             var content = comment["content"] + "";
-            var flag = content.Contains("该评论已被删除") || content.Contains("用户已被封禁");
-            if (flag)
-            {
-                //Console.WriteLine("cid##{0} ===== acNo###{1} >>>>> {2}", comment["cid"], ArticleInfo.AcNo, content);
-            }
+            var flag = content.Contains("该评论已被删除") || content.Contains("用户已被封禁") || content.Contains("评论正在审核中");
             return flag;
+        }
+
+        private CommentData ResovleToComment(JObject commentRaw)
+        {
+            return new CommentData
+            {
+                AcNo = ArticleInfo.AcNo,
+                Content = (string)commentRaw["content"],
+                Floor = (int)commentRaw["floor"],
+                ReleaseTime = ((long)commentRaw["timestamp"]).ToDateTime(),
+                UserInfo = new UserInfo
+                {
+                    AvatarImageUrl = (string)commentRaw["headUrl"]?.AsEnumerable().FirstOrDefault()?["url"],
+                    Id = (long)commentRaw["userId"],
+                    Name = (string)commentRaw["userName"],
+                },
+                CId = (int)commentRaw["cid"],
+                RawData = commentRaw.ToString()
+            };
         }
     }
 }
