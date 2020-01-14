@@ -90,30 +90,16 @@ namespace AcfunTools.CommentXuMing.Crawler
             {
                 if ((int)article["comment_count"] < 3) continue; // 不超过3个评论的不爬
 
+                CommentFetchContext handle;
                 var id = article["id"] + "";
-                if (_commentFetchContexts.ContainsKey(id)) // 已有 CommentFetchContext, 开爬!
+                if (_commentFetchContexts.TryGetValue(id, out handle)) // 已有 CommentFetchContext, 开爬!
                 {
-                    _ = _commentFetchContexts[id].RunProcessAsync().ConfigureAwait(false);
+                    _ = handle.RunProcessAsync().ConfigureAwait(false);
                     continue;
                 };
 
                 // 没有 CommentFetchContext, 新建一个开爬!
-                var handle = CommentFetchContext.Initial(new ArticleData
-                {
-                    AcNo = id,
-                    ChannelId = (int)article["channel_id"],
-                    ParentChannelId = (int)article["parent_channel_id"],
-                    ReleaseTime = ((long)article["contribute_time"]).ToDateTime(),
-                    RawData = article.ToString(),
-                    Title = article["title"] + "",
-                    SubTitle = article["description"] + "",
-                    UserInfo = new UserInfo
-                    {
-                        AvatarImageUrl = article["user_avatar"] + "",
-                        Name = article["username"] + "",
-                        Id = (long)article["user_id"]
-                    }
-                });
+                handle = CommentFetchContext.Initial(ResolveToArticleData(article));
                 handle.OnFindTargetComments += _consumeDataHandle;
                 handle.OnFectchOver += (sender) =>
                 {
@@ -152,6 +138,26 @@ namespace AcfunTools.CommentXuMing.Crawler
                 Console.WriteLine("[Crawler][err] FetchArticlesJson http Fail: {0}", e.Message);
                 return null;
             }
+        }
+
+        private ArticleData ResolveToArticleData(JToken articleRaw)
+        {
+            return new ArticleData
+            {
+                AcNo = articleRaw["id"] + "",
+                ChannelId = (int)articleRaw["channel_id"],
+                ParentChannelId = (int)articleRaw["parent_channel_id"],
+                ReleaseTime = ((long)articleRaw["contribute_time"]).ToDateTime(),
+                RawData = articleRaw.ToString(),
+                Title = articleRaw["title"] + "",
+                SubTitle = articleRaw["description"] + "",
+                UserInfo = new UserInfo
+                {
+                    AvatarImageUrl = articleRaw["user_avatar"] + "",
+                    Name = articleRaw["username"] + "",
+                    Id = (long)articleRaw["user_id"]
+                }
+            };
         }
     }
 }
