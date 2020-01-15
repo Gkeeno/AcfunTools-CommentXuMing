@@ -30,10 +30,9 @@ namespace AcfunTools.CommentXuMing.Crawler
         private ConsumeDataHandle _consumeDataHandle;
 
         private ConcurrentDictionary<string, CommentFetchContext> _commentFetchContexts = new ConcurrentDictionary<string, CommentFetchContext>();
-
+        private Timer _timer;
         public Crawler()
         {
-
         }
 
         public void SetDataConsumeHandle(ConsumeDataHandle handle) =>
@@ -103,7 +102,7 @@ namespace AcfunTools.CommentXuMing.Crawler
                 handle.OnFindTargetComments += _consumeDataHandle;
                 handle.OnFectchOver += (sender) =>
                 {
-                    Console.WriteLine("[OnFetchOver] FROM Id: {1} ；文章名称：{0}；", sender.ArticleInfo.Title, sender.ArticleInfo.AcNo);
+                    Console.WriteLine($"[OnFetchOver]{DateTime.Now.ToString()} FROM Id: { sender.ArticleInfo.Title} ###文章名称：{ sender.ArticleInfo.AcNo}");
                     _commentFetchContexts.TryRemove(sender.ArticleInfo.AcNo, out var _);
                 };
 

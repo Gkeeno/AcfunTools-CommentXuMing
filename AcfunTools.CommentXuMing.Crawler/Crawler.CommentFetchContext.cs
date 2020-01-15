@@ -22,8 +22,11 @@ namespace AcfunTools.CommentXuMing.Crawler
         private static readonly HttpClient HttpClient = new HttpClient();
 
         private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
-
+        /// <summary>
+        /// Timer要保持引用不然会被释放, 触发一次回调之后也被释放
+        /// </summary>
         private Timer _timerForExpireCountdown;
+        private DateTime _lastProcessTime;
 
         /// <summary>
         /// key: "c112072423"; value: jobject
@@ -35,7 +38,6 @@ namespace AcfunTools.CommentXuMing.Crawler
 
         public event ConsumeDataHandle OnFindTargetComments;
         public event Action<CommentFetchContext> OnFectchOver;
-
         public static CommentFetchContext Initial(ArticleData articleinfo)
         {
             return new CommentFetchContext(articleinfo);
@@ -44,7 +46,16 @@ namespace AcfunTools.CommentXuMing.Crawler
         private CommentFetchContext(ArticleData articleinfo)
         {
             this.ArticleInfo = articleinfo;
-            this._timerForExpireCountdown = new Timer((sender) => this.Exit(), null, (int)TimeSpan.FromHours(1).TotalMilliseconds, -1);
+            // 每31分钟 检查一次, 如果超过30分钟没有执行Process则清楚该上下文
+            TimerCallback timeout = (sender) =>
+            {
+                var stopProcessTime = DateTime.Now - _lastProcessTime;
+                if (stopProcessTime > TimeSpan.FromMinutes(30))
+                {
+                    Exit();
+                }
+            }; 
+            this._timerForExpireCountdown = new Timer(timeout, null, (int)TimeSpan.FromMinutes(31).TotalMilliseconds, (int)TimeSpan.FromMinutes(31).TotalMilliseconds);
         }
 
         public void Exit()
@@ -63,13 +74,15 @@ namespace AcfunTools.CommentXuMing.Crawler
             }
             catch (Exception ex)
             {
-                Console.WriteLine("[CommentFetchContext] 发生未处理的异常，将停止当前作业: " + ex.Message + Environment.NewLine + ex.StackTrace);
+                Console.WriteLine($"[CommentFetchContext]{DateTime.Now.ToString()} 发生未处理的异常，将停止当前作业: " + ex.Message + Environment.NewLine + ex.StackTrace);
                 //Exit();
                 await Task.FromException(ex);
             }
         }
         public async Task Process()
         {
+            _lastProcessTime = DateTime.Now;
+
             var orgnum = _comments.Count;
             //Console.WriteLine("[CommentFetchContext] running....{0}", ArticleInfo.Title);
 
@@ -95,7 +108,7 @@ namespace AcfunTools.CommentXuMing.Crawler
             var curnum = _comments.Count;
             if (orgnum != curnum)
             {
-                Console.WriteLine("[CommentFetchContext][评论记录变动] {1}-->{2}, ###文章###{0}", ArticleInfo.Title, orgnum, curnum);
+                Console.WriteLine("[CommentFetchContext][评论记录变动] {1}-->{2}, ###文章{3}###{0}", ArticleInfo.Title, orgnum, curnum, ArticleInfo.AcNo);
             }
         }
 
