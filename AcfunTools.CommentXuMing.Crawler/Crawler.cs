@@ -92,26 +92,21 @@ namespace AcfunTools.CommentXuMing.Crawler
 
                 CommentFetchContext handle;
                 var id = article["id"] + "";
-                if (_commentFetchContexts.TryGetValue(id, out handle)) // 已有 CommentFetchContext, 开爬!
+                if (!_commentFetchContexts.TryGetValue(id, out handle)) // 没有 CommentFetchContext, 新建一个开爬!
                 {
-                    _ = handle.RunProcessAsync().ConfigureAwait(false);
-                    continue;
-                };
+                    handle = CommentFetchContext.Initial(ResolveToArticleData(article));
+                    handle.OnFindTargetComments += _consumeDataHandle;
+                    handle.OnFectchOver += (sender) =>
+                    {
+                        Console.WriteLine("[OnFetchOver] FROM Id: {1} ；文章名称：{0}；", sender.ArticleInfo.Title, sender.ArticleInfo.AcNo);
+                        _commentFetchContexts.TryRemove(sender.ArticleInfo.AcNo, out var _);
+                    };
 
-                // 没有 CommentFetchContext, 新建一个开爬!
-                handle = CommentFetchContext.Initial(ResolveToArticleData(article));
-                handle.OnFindTargetComments += _consumeDataHandle;
-                handle.OnFectchOver += (sender) =>
-                {
-                    Console.WriteLine("[OnFetchOver] FROM Id: {1} ；文章名称：{0}；", sender.ArticleInfo.Title, sender.ArticleInfo.AcNo);
-                    _commentFetchContexts.TryRemove(sender.ArticleInfo.AcNo, out var _);
-                };
+                    // 存储对应文章爬取任务
+                    if (!_commentFetchContexts.TryAdd(id, handle)) continue;
+                }
 
-                // 对应文章存储爬取任务
-                if (_commentFetchContexts.TryAdd(id, handle))
-                {
-                    _ = handle.RunProcessAsync().ConfigureAwait(false);
-                };
+                _ = handle.RunProcessAsync().ConfigureAwait(false);
             }
         }
 
