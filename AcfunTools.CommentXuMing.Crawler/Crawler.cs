@@ -81,11 +81,10 @@ namespace AcfunTools.CommentXuMing.Crawler
         {
             if (_consumeDataHandle == null) throw new Exception("[Crawler][err] 数据消费函数不能为空");
 
-            // a. 循环每个文章（目前就综合区）的第一页, 并不断刷新是否有新的文章，加入到文章队列；
+            // 循环每个文章（目前就综合区）的第一页, 并不断刷新是否有新的文章，加入到文章队列；
             var result = await FetchArticlesJson() ?? throw new Exception("[Crawler][err] 没捉取到任何文章");
             var articles = result["data"]?["articleList"]?.AsJEnumerable() ?? throw new Exception("[Crawler][err] 没捉取到任何文章");
 
-            // TODO 完善最新动态文章判断
             foreach (var article in articles)
             {
                 if ((int)article["comment_count"] < 3) continue; // 不超过3个评论的不爬
