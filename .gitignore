@@ -11,3 +11,6 @@
 /AcfunTools.CommentXuMing.Web/obj
 /AcfunTools.CommentXuMing.Web/AcfunTools_CommentXuMing.db-*
 /.vs
+/AcfunTools.CommentXuMing.Crawler/bin/Release/netstandard2.0
+/AcfunTools.CommentXuMing.DataEntity/bin/Release/netstandard2.0
+/AcfunTools.CommentXuMing.Web/bin/Release/netcoreapp3.1

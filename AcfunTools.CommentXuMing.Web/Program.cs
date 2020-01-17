@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AcfunTools.CommentXuMing.Crawler.Dtos;
 using AcfunTools.CommentXuMing.Model;
 using AcfunTools.CommentXuMing.Model.Entity;
 using Microsoft.AspNetCore.Hosting;
@@ -29,9 +30,10 @@ namespace AcfunTools.CommentXuMing.Web
                 var crawler = new Crawler.Crawler();
                 crawler.SetDataConsumeHandle((article, comments) =>
                 {
-                    Console.WriteLine("摸到了! ##Title## {0} , ##comments## {1}",
-                        Environment.NewLine + article.Title,
-                        Environment.NewLine + JsonConvert.SerializeObject(comments));
+                    Console.WriteLine("摸到了! ##Title## {0}  ##comments## {1}", 
+                        article.Title + Environment.NewLine,
+                        comments.Select(c=> Environment.NewLine + $"#{c.Floor} 用户名:{c.UserInfo.Name}===内容：{c.Content}")
+                        );
 
                     try
                     {
@@ -66,7 +68,7 @@ namespace AcfunTools.CommentXuMing.Web
                                 UserName = c.UserInfo.Name,
                                 AvatarImageUrl = c.UserInfo.AvatarImageUrl,
                             }));
-                            dbcontext.SaveChanges(); // 不能同时在多个线程中执行此操作
+                            dbcontext.SaveChanges(); // 不能同时在多个线程中执行此操作（上个线程没完成下个线程启动，会抛出异常)
                         }
                     }
                     catch (Exception ex)
