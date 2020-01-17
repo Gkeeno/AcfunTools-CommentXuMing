@@ -52,10 +52,10 @@ namespace AcfunTools.CommentXuMing.Crawler
                 {
                     while (true)
                     {
-                        Console.WriteLine($"[Crawler]{DateTime.Now.ToString()} ProcessStart..............");
+                        Console.WriteLine($"[Crawler]{DateTime.Now} ProcessStart..............");
                         await RunProcess();
                         await Task.Delay(CrawlerConstant.IntervalMillisecond_RefreshArticle);
-                        Console.WriteLine($"[Crawler]{DateTime.Now.ToString()} ProcessOver..............处理文章数:{_commentFetchContexts.Count}");
+                        Console.WriteLine($"[Crawler]{DateTime.Now} ProcessOver..............处理文章数:{_commentFetchContexts.Count}");
                     }
                 }
                 catch (Exception ex)
@@ -71,7 +71,7 @@ namespace AcfunTools.CommentXuMing.Crawler
             _cancellationSource.Cancel();
             _consumeDataHandle = null;
         }
-
+        
         public dynamic DumpData()
         {
             return null;
@@ -97,7 +97,7 @@ namespace AcfunTools.CommentXuMing.Crawler
                     handle.OnFindTargetComments += _consumeDataHandle;
                     handle.OnFectchOver += (sender) =>
                     {
-                        Console.WriteLine("[OnFetchOver] FROM Id: {1} ；文章名称：{0}；", sender.ArticleInfo.Title, sender.ArticleInfo.AcNo);
+                        Console.WriteLine($"[OnFetchOver]{DateTime.Now} FROM Id: {sender.ArticleInfo.AcNo} ；文章名称：{sender.ArticleInfo.Title}；");
                         _commentFetchContexts.TryRemove(sender.ArticleInfo.AcNo, out var _);
                     };
 

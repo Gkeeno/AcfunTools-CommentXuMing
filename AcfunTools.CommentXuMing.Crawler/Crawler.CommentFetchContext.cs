@@ -74,7 +74,7 @@ namespace AcfunTools.CommentXuMing.Crawler
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[CommentFetchContext]{DateTime.Now.ToString()} 发生未处理的异常，将停止当前作业: " + ex.Message + Environment.NewLine + ex.StackTrace);
+                Console.WriteLine($"[CommentFetchContext]{DateTime.Now} 发生未处理的异常，将停止当前作业: " + ex.Message + Environment.NewLine + ex.StackTrace);
                 //Exit();
                 await Task.FromException(ex);
             }
@@ -156,7 +156,7 @@ namespace AcfunTools.CommentXuMing.Crawler
                         var targetComment = ResovleToComment(commentInfo);
                         _excludeCommentIds.TryAdd(commentInfoKey, true);
 
-                        Console.WriteLine("[CommentFetchContext][找到目标评论] name##{0} ==== floor##{1} ==== content##{2}", targetComment.UserInfo.Name, targetComment.Floor, targetComment.Content);
+                        Console.WriteLine("[CommentFetchContext][找到目标评论]");
 
                         comments_target.Add(targetComment);
                     }
