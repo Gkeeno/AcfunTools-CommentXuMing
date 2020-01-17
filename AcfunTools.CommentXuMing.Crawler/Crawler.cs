@@ -30,9 +30,10 @@ namespace AcfunTools.CommentXuMing.Crawler
         private ConsumeDataHandle _consumeDataHandle;
 
         private ConcurrentDictionary<string, CommentFetchContext> _commentFetchContexts = new ConcurrentDictionary<string, CommentFetchContext>();
-        private Timer _timer;
+
         public Crawler()
         {
+
         }
 
         public void SetDataConsumeHandle(ConsumeDataHandle handle) =>
@@ -80,37 +81,31 @@ namespace AcfunTools.CommentXuMing.Crawler
         {
             if (_consumeDataHandle == null) throw new Exception("[Crawler][err] 数据消费函数不能为空");
 
-            // a. 循环每个文章（目前就综合区）的第一页, 并不断刷新是否有新的文章，加入到文章队列；
+            // 循环每个文章（目前就综合区）的第一页, 并不断刷新是否有新的文章，加入到文章队列；
             var result = await FetchArticlesJson() ?? throw new Exception("[Crawler][err] 没捉取到任何文章");
             var articles = result["data"]?["articleList"]?.AsJEnumerable() ?? throw new Exception("[Crawler][err] 没捉取到任何文章");
 
-            // TODO 完善最新动态文章判断
             foreach (var article in articles)
             {
                 if ((int)article["comment_count"] < 3) continue; // 不超过3个评论的不爬
 
                 CommentFetchContext handle;
                 var id = article["id"] + "";
-                if (_commentFetchContexts.TryGetValue(id, out handle)) // 已有 CommentFetchContext, 开爬!
+                if (!_commentFetchContexts.TryGetValue(id, out handle)) // 没有 CommentFetchContext, 新建一个开爬!
                 {
-                    _ = handle.RunProcessAsync().ConfigureAwait(false);
-                    continue;
-                };
+                    handle = CommentFetchContext.Initial(ResolveToArticleData(article));
+                    handle.OnFindTargetComments += _consumeDataHandle;
+                    handle.OnFectchOver += (sender) =>
+                    {
+                        Console.WriteLine("[OnFetchOver] FROM Id: {1} ；文章名称：{0}；", sender.ArticleInfo.Title, sender.ArticleInfo.AcNo);
+                        _commentFetchContexts.TryRemove(sender.ArticleInfo.AcNo, out var _);
+                    };
 
-                // 没有 CommentFetchContext, 新建一个开爬!
-                handle = CommentFetchContext.Initial(ResolveToArticleData(article));
-                handle.OnFindTargetComments += _consumeDataHandle;
-                handle.OnFectchOver += (sender) =>
-                {
-                    Console.WriteLine($"[OnFetchOver]{DateTime.Now.ToString()} FROM Id: { sender.ArticleInfo.Title} ###文章名称：{ sender.ArticleInfo.AcNo}");
-                    _commentFetchContexts.TryRemove(sender.ArticleInfo.AcNo, out var _);
-                };
+                    // 存储对应文章爬取任务
+                    if (!_commentFetchContexts.TryAdd(id, handle)) continue;
+                }
 
-                // 对应文章存储爬取任务
-                if (_commentFetchContexts.TryAdd(id, handle))
-                {
-                    _ = handle.RunProcessAsync().ConfigureAwait(false);
-                };
+                _ = handle.RunProcessAsync().ConfigureAwait(false);
             }
         }
 
