@@ -30,9 +30,9 @@ namespace AcfunTools.CommentXuMing.Web
                 var crawler = new Crawler.Crawler();
                 crawler.SetDataConsumeHandle((article, comments) =>
                 {
-                    Console.WriteLine("摸到了! ##Title## {0}##comments## >>>>> {1}", 
+                    Console.WriteLine("摸到了! ##Title## {0}##comments## >>>>> {1}",
                         article.Title + Environment.NewLine,
-                        Environment.NewLine + string.Join(Environment.NewLine,comments.Select(c=>  $"#{c.Floor} 用户名:{c.UserInfo.Name}===内容：{c.Content}"))
+                        Environment.NewLine + string.Join(Environment.NewLine, comments.Select(c => $"#{c.Floor} 用户名:{c.UserInfo.Name}===内容：{c.Content}"))
                         );
 
                     try
@@ -92,7 +92,10 @@ namespace AcfunTools.CommentXuMing.Web
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.UseStartup<Startup>();
-                });
+                    webBuilder
+                    .UseUrls("http://*:8000;")
+                    .UseStartup<Startup>();
+                })
+            ;
     }
 }
