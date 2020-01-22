@@ -2,14 +2,97 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="row justify-content-center">
+<div class="row justify-content-center" style="margin-top:8%">
     <div class="col col-lg-6">
-
         <div class="input-group input-group-lg">
             <div class="input-group-prepend">
-                <span class="input-group-text" id="inputGroup-sizing-lg">Large</span>
+                <span class="input-group-text" id="inputGroup-sizing-lg">ac</span>
             </div>
-            <input type="text" class="form-control" placeholder="Ac号">
+            <input id="txt_acno" type="text" class="form-control" placeholder="Ac号">
+
+            <div class="input-group-prepend">
+                <span class="input-group-text" id="inputGroup-sizing-lg">#</span>
+            </div>
+            <input id="txt_floor" type="text" class="form-control" placeholder="楼层">
+
+            <div class="input-group-append">
+                <button id="btn_search" class="btn btn-outline-secondary" type="button">④👂⑦</button>
+            </div>
         </div>
     </div>
 </div>
+
+<div class="row justify-content-center" style="margin-top:2%;text-align:center;display:none" id="loading">
+    <div class="col col-lg-8">
+        <div class="spinner-border text-dark" role="status" style="margin: 0 auto">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>
+</div>
+
+<div class="row justify-content-center" style="margin-top:2%" id="container_content">
+    <div class="col col-lg-8">
+        <div class="card" style="padding:1rem;flex-direction:row;">
+            <img src="~/image/defaultAvatar.jpg" class="card-img-top" alt="..." style="width:80px;height:70px">
+            <div class="card-body" style="float:right;padding-top:0" id="box_content">
+                This is some text within a card body.
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row justify-content-center nocontent" style="margin-top:2%;display:none">
+    <h4>找不到这条评论...</h4>
+</div>
+
+@section Scripts{
+    <script>
+        $(function () {
+            $("#btn_search").click(function () {
+                search();
+            });
+        })
+
+        function search() {
+            var acNo = $("#txt_acno").val();
+            var floor = $("#txt_floor").val();
+            loadingStart();
+            $.ajax({
+                url: "./home/Search",
+                data: { acNo, floor },
+                method: "POST",
+                success: function (result) {
+                    if (result.data) {
+                        showComment(result.data.content);
+                    } else {
+                        showNoContent();
+                    }
+                    loadingOver();
+                }
+            })
+        }
+
+        function showComment(content) {
+            $(".nocontent").hide();
+            $("#container_content").show();
+            $("#box_content").text(content);
+        }
+
+        function showNoContent() {
+            $(".nocontent").show();
+            $("#container_content").hide();
+        }
+
+        function loadingStart() {
+            $(".nocontent").hide();
+            $("#container_content").hide();
+
+            $("#loading").show();
+            $("#btn_search").attr("disabled",true);
+        }
+        function loadingOver() {
+            $("#loading").hide();
+            $("#btn_search").removeAttr("disabled");
+        }
+    </script>
+}
