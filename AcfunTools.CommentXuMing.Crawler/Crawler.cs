@@ -54,6 +54,7 @@ namespace AcfunTools.CommentXuMing.Crawler
                     {
                         Console.WriteLine($"[Crawler]{DateTime.Now} ProcessStart..............");
                         await RunProcess();
+                        await RunProcess("情感区");
                         await Task.Delay(CrawlerConstant.IntervalMillisecond_RefreshArticle);
                         Console.WriteLine($"[Crawler]{DateTime.Now} ProcessOver..............处理文章数:{_commentFetchContexts.Count}");
                     }
@@ -71,23 +72,26 @@ namespace AcfunTools.CommentXuMing.Crawler
             _cancellationSource.Cancel();
             _consumeDataHandle = null;
         }
-        
+
         public dynamic DumpData()
         {
             return null;
         }
 
-        private async Task RunProcess()
+        private async Task RunProcess(string type = "默认全部区")
         {
             if (_consumeDataHandle == null) throw new Exception("[Crawler][err] 数据消费函数不能为空");
 
             // 循环每个文章（目前就综合区）的第一页, 并不断刷新是否有新的文章，加入到文章队列；
-            var result = await FetchArticlesJson() ?? throw new Exception("[Crawler][err] 没捉取到任何文章");
+            var result = (
+                type == "默认全部区" ? await FetchArticlesJson() :
+                type == "情感区" ? await FetchArticlesJson_情感区() : await FetchArticlesJson()
+                ) ?? throw new Exception("[Crawler][err] 没捉取到任何文章");
             var articles = result["data"]?["articleList"]?.AsJEnumerable() ?? throw new Exception("[Crawler][err] 没捉取到任何文章");
 
             foreach (var article in articles)
             {
-                if ((int)article["comment_count"] < 3) continue; // 不超过3个评论的不爬
+                if ((int)article["comment_count"] < 3 || (int)article["comment_count"] > 2000) continue; // 不超过3个，超过2000个评论的不爬
 
                 CommentFetchContext handle;
                 var id = article["id"] + "";
@@ -119,6 +123,29 @@ namespace AcfunTools.CommentXuMing.Crawler
         private async Task<JObject> FetchArticlesJson(string ordertype = "2")
         {
             var queryUrl = $"{CrawlerConstant.url_articleList}?pageNo=1&size=300&originalOnly=false&orderType={ordertype}&periodType=-1&filterTitleImage=true";
+            try
+            {
+                var response = await HttpClient.GetAsync(queryUrl, _cancellationSource.Token);
+                response.EnsureSuccessStatusCode();
+                string responseBody = await response.Content.ReadAsStringAsync();
+
+                return JsonConvert.DeserializeObject<JObject>(responseBody);
+            }
+            catch (HttpRequestException e)
+            {
+                Console.WriteLine("[Crawler][err] FetchArticlesJson http Fail: {0}", e.Message);
+                return null;
+            }
+        }
+        /// <summary>
+        /// 获取情感区数据
+        /// </summary>
+        /// <param name="acNo"></param>
+        /// <param name="category"></param>
+        /// <returns></returns>
+        private async Task<JObject> FetchArticlesJson_情感区()
+        {
+            var queryUrl = $"{CrawlerConstant.url_articleList}?pageNo=1&size=100&realmIds=25%2C34%2C7%2C6%2C17%2C1%2C2&originalOnly=false&orderType=1&periodType=-1&filterTitleImage=true";
             try
             {
                 var response = await HttpClient.GetAsync(queryUrl, _cancellationSource.Token);
