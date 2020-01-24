@@ -54,9 +54,9 @@ namespace AcfunTools.CommentXuMing.Crawler
                     {
                         Console.WriteLine($"[Crawler]{DateTime.Now} ProcessStart..............");
                         await RunProcess();
-                        await Task.Delay(800);
-                        await RunProcess("情感区");
                         await Task.Delay(CrawlerConstant.IntervalMillisecond_RefreshArticle);
+                        await RunProcess("情感区");
+                        await Task.Delay(CrawlerConstant.IntervalMillisecond_RefreshArticle - 400);
                         Console.WriteLine($"[Crawler]{DateTime.Now} ProcessOver..............处理文章数:{_commentFetchContexts.Count}");
                     }
                 }
