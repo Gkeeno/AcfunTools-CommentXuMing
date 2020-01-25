@@ -53,10 +53,10 @@ namespace AcfunTools.CommentXuMing.Crawler
                     while (true)
                     {
                         Console.WriteLine($"[Crawler]{DateTime.Now} ProcessStart..............");
-                        await RunProcess();
+                        await RunProcess("综合区");
                         await Task.Delay(CrawlerConstant.IntervalMillisecond_RefreshArticle);
                         await RunProcess("情感区");
-                        await Task.Delay(CrawlerConstant.IntervalMillisecond_RefreshArticle - 400);
+                        await Task.Delay(CrawlerConstant.IntervalMillisecond_RefreshArticle - 800);
                         Console.WriteLine($"[Crawler]{DateTime.Now} ProcessOver..............处理文章数:{_commentFetchContexts.Count}");
                     }
                 }
@@ -79,14 +79,14 @@ namespace AcfunTools.CommentXuMing.Crawler
             return null;
         }
 
-        private async Task RunProcess(string type = "默认全部区")
+        private async Task RunProcess(string type = "综合区")
         {
             if (_consumeDataHandle == null) throw new Exception("[Crawler][err] 数据消费函数不能为空");
 
             // 循环每个文章（目前就综合区）的第一页, 并不断刷新是否有新的文章，加入到文章队列；
             var result = (
-                type == "默认全部区" ? await FetchArticlesJson() :
-                type == "情感区" ? await FetchArticlesJson_情感区() : await FetchArticlesJson()
+                type == "综合区" ? await FetchArticlesJson_综合区() :
+                type == "情感区" ? await FetchArticlesJson_情感区() : await FetchArticlesJson_综合区()
                 ) ?? throw new Exception("[Crawler][err] 没捉取到任何文章");
             var articles = result["data"]?["articleList"]?.AsJEnumerable() ?? throw new Exception("[Crawler][err] 没捉取到任何文章");
 
@@ -121,9 +121,10 @@ namespace AcfunTools.CommentXuMing.Crawler
         /// <param name="acNo"></param>
         /// <param name="category"></param>
         /// <returns></returns>
-        private async Task<JObject> FetchArticlesJson(string ordertype = "2")
+        private async Task<JObject> FetchArticlesJson_综合区()
         {
-            var queryUrl = $"{CrawlerConstant.url_articleList}?pageNo=1&size=300&originalOnly=false&orderType={ordertype}&periodType=-1&filterTitleImage=true";
+            //var queryUrl = $"{CrawlerConstant.url_articleList}?pageNo=1&size=300&originalOnly=false&orderType=2&periodType=-1&filterTitleImage=true";
+            var queryUrl = $"{CrawlerConstant.url_articleList}?pageNo=1&size=130&realmIds=5%2C22%2C3%2C4&originalOnly=false&orderType=1&periodType=-1&filterTitleImage=true";
             try
             {
                 var response = await HttpClient.GetAsync(queryUrl, _cancellationSource.Token);
@@ -146,7 +147,7 @@ namespace AcfunTools.CommentXuMing.Crawler
         /// <returns></returns>
         private async Task<JObject> FetchArticlesJson_情感区()
         {
-            var queryUrl = $"{CrawlerConstant.url_articleList}?pageNo=1&size=100&realmIds=25%2C34%2C7%2C6%2C17%2C1%2C2&originalOnly=false&orderType=1&periodType=-1&filterTitleImage=true";
+            var queryUrl = $"{CrawlerConstant.url_articleList}?pageNo=1&size=80&realmIds=25%2C34%2C7%2C6%2C17%2C1%2C2&originalOnly=false&orderType=1&periodType=-1&filterTitleImage=true";
             try
             {
                 var response = await HttpClient.GetAsync(queryUrl, _cancellationSource.Token);
