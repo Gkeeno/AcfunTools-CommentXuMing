@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using AcfunTools.CommentXuMing.Crawler.Dtos;
 using AcfunTools.CommentXuMing.Model;
@@ -18,6 +19,8 @@ namespace AcfunTools.CommentXuMing.Web
     {
         public static void Main(string[] args)
         {
+            ThreadPool.SetMaxThreads(2 /*工作线程*/, 200 /*IO线程*/);
+
             var host = CreateHostBuilder(args).Build();
             // 创建爬虫
             var seviScope = host.Services.CreateScope();

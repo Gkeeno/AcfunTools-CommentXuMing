@@ -31,9 +31,13 @@ namespace AcfunTools.CommentXuMing.Crawler
 
         private ConcurrentDictionary<string, CommentFetchContext> _commentFetchContexts = new ConcurrentDictionary<string, CommentFetchContext>();
 
+        static Crawler()
+        {
+            HttpClient.Timeout = TimeSpan.FromSeconds(5); // 默认是100秒, 为了减少下一波压力设置周期放弃
+        }
+
         public Crawler()
         {
-
         }
 
         public void SetDataConsumeHandle(ConsumeDataHandle handle) =>
