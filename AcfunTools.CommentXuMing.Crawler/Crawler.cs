@@ -67,6 +67,7 @@ namespace AcfunTools.CommentXuMing.Crawler
                 catch (Exception ex)
                 {
                     Console.WriteLine("[Crawler][err] unhandled exception: {0}", Environment.NewLine + ex.Message + Environment.NewLine + ex.StackTrace);
+                    await SendServerErrorNotice(ex.Message);
                     throw ex;
                 }
             }, cancellationToken);
@@ -125,7 +126,7 @@ namespace AcfunTools.CommentXuMing.Crawler
         /// <param name="acNo"></param>
         /// <param name="category"></param>
         /// <returns></returns>
-        private async Task<JObject> FetchArticlesJson_综合区()
+        private async Task<JObject> FetchArticlesJson_综合区(int retryCount = 0)
         {
             //var queryUrl = $"{CrawlerConstant.url_articleList}?pageNo=1&size=300&originalOnly=false&orderType=2&periodType=-1&filterTitleImage=true";
             var queryUrl = $"{CrawlerConstant.url_articleList}?pageNo=1&size=130&realmIds=5%2C22%2C3%2C4&originalOnly=false&orderType=1&periodType=-1&filterTitleImage=true";
@@ -140,7 +141,12 @@ namespace AcfunTools.CommentXuMing.Crawler
             catch (HttpRequestException e)
             {
                 Console.WriteLine("[Crawler][err] FetchArticlesJson http Fail: {0}", e.Message);
-                return null;
+                if (retryCount > 2)
+                {
+                    return null;
+                }
+                await Task.Delay(100);
+                return await FetchArticlesJson_综合区(retryCount++);
             }
         }
         /// <summary>
@@ -149,7 +155,7 @@ namespace AcfunTools.CommentXuMing.Crawler
         /// <param name="acNo"></param>
         /// <param name="category"></param>
         /// <returns></returns>
-        private async Task<JObject> FetchArticlesJson_情感区()
+        private async Task<JObject> FetchArticlesJson_情感区(int retryCount = 0)
         {
             var queryUrl = $"{CrawlerConstant.url_articleList}?pageNo=1&size=80&realmIds=25%2C34%2C7%2C6%2C17%2C1%2C2&originalOnly=false&orderType=1&periodType=-1&filterTitleImage=true";
             try
@@ -163,7 +169,12 @@ namespace AcfunTools.CommentXuMing.Crawler
             catch (HttpRequestException e)
             {
                 Console.WriteLine("[Crawler][err] FetchArticlesJson http Fail: {0}", e.Message);
-                return null;
+                if (retryCount > 2)
+                {
+                    return null;
+                }
+                await Task.Delay(100);
+                return await FetchArticlesJson_情感区(retryCount++);
             }
         }
 
@@ -185,6 +196,15 @@ namespace AcfunTools.CommentXuMing.Crawler
                     Id = (long)articleRaw["user_id"]
                 }
             };
+        }
+
+        private async Task SendServerErrorNotice(string msg = "")
+        {
+            var logurl = $"https://sc.ftqq.com/SCU70012T2d9cae3a9ef2addbb1086174331369f35dfc665e633f6.send?text="+ msg;
+            
+            var response = await HttpClient.GetAsync(logurl);
+            response.EnsureSuccessStatusCode();
+            string responseBody = await response.Content.ReadAsStringAsync();
         }
     }
 }
