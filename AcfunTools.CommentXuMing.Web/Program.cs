@@ -19,7 +19,7 @@ namespace AcfunTools.CommentXuMing.Web
     {
         public static void Main(string[] args)
         {
-            ThreadPool.SetMaxThreads(2 /*工作线程*/, 200 /*IO线程*/);
+            ThreadPool.SetMaxThreads(1 /*工作线程*/, 200 /*IO线程*/);
 
             var host = CreateHostBuilder(args).Build();
             // 创建爬虫

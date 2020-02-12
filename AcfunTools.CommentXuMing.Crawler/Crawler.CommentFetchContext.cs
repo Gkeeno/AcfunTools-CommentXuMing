@@ -96,8 +96,8 @@ namespace AcfunTools.CommentXuMing.Crawler
             if (totalPageCount > 1)
             {
                 var pageCount = totalPageCount - 1;
-                var tasks_leftPage = from ipage in Enumerable.Range(2, pageCount).Skip(Math.Max(0 ,pageCount - 5)) // 取倒数5页的页码处理
-                                     select Task.Run(async () =>
+                var tasks_leftPage = from ipage in Enumerable.Range(2, pageCount).Skip(Math.Max(0 ,pageCount - 4)) // 取倒数5页的页码处理
+                                     select Task.Factory.StartNew(async () =>
                                      {
                                          var comments_curPage = await FetchCommentsJson(ArticleInfo.AcNo, ipage.ToString());
                                          var commentInfosRaw_curPage = comments_curPage["commentsMap"].ToString();

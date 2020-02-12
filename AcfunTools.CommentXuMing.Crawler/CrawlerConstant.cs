@@ -9,6 +9,6 @@ namespace AcfunTools.CommentXuMing.Crawler
         public static string url_articleList = "https://webapi.acfun.cn/query/article/list";
         public static string url_articleComments = "https://www.acfun.cn/rest/pc-direct/comment/listByFloor";
 
-        public static int IntervalMillisecond_RefreshArticle = 7_300;
+        public static int IntervalMillisecond_RefreshArticle = 8_200;
     }
 }
