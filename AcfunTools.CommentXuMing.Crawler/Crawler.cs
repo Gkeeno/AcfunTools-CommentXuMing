@@ -143,7 +143,7 @@ namespace AcfunTools.CommentXuMing.Crawler
                 Console.WriteLine("[Crawler][err] FetchArticlesJson http Fail: {0}", e.Message);
                 if (retryCount > 2)  return null;
 
-                Console.WriteLine("[Crawler] FetchArticlesJson_情感区 http Fail，重试{0}", retryCount);
+                Console.WriteLine("[Crawler] FetchArticlesJson_综合区 http Fail，重试{0}", retryCount);
                 await Task.Delay(100);
                 return await FetchArticlesJson_综合区(retryCount++);
             }
