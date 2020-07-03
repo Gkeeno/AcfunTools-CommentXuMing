@@ -7,8 +7,22 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="AcfunTools_CommentXuMing.db" />
     <None Remove="AcfunTools_CommentXuMing.db-shm" />
     <None Remove="AcfunTools_CommentXuMing.db-wal" />
+    <None Remove="Dockerfile" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Dockerfile">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="AcfunTools_CommentXuMing.db">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>

@@ -131,8 +131,6 @@ namespace AcfunTools.CommentXuMing.Crawler
         /// <returns></returns>
         private async Task<JObject> FetchArticlesJson_综合区(int retryCount = 0)
         {
-            Console.WriteLine("[Crawler][err] FetchArticlesJson retryCount: {0}", retryCount);
-
             //var queryUrl = $"{CrawlerConstant.url_articleList}?pageNo=1&size=300&originalOnly=false&orderType=2&periodType=-1&filterTitleImage=true";
             var queryUrl = $"{CrawlerConstant.url_articleList}?pageNo=1&size=130&realmIds=5%2C22%2C3%2C4&originalOnly=false&orderType=1&periodType=-1&filterTitleImage=true";
             try
@@ -204,7 +202,6 @@ namespace AcfunTools.CommentXuMing.Crawler
         private async Task SendServerErrorNotice(string msg = "")
         {
             var logurl = $"{_crawlerStopNotifyUrl}{msg}";
-
             var response = await HttpClient.GetAsync(logurl);
             response.EnsureSuccessStatusCode();
             string responseBody = await response.Content.ReadAsStringAsync();

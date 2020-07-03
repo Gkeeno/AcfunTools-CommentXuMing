@@ -6,6 +6,11 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <TimeStampOfAssociatedLegacyPublishXmlFile />
-    <_PublishTargetUrl>F:\Repository\AcfunTools.CommentXuMing\AcfunTools.CommentXuMing.Web\bin\Release\netcoreapp3.1\publish1\</_PublishTargetUrl>
+    <_PublishTargetUrl>F:\repository\AcfunTools-CommentXuMing\AcfunTools.CommentXuMing.Web\bin\Release\netcoreapp3.1\publish1\</_PublishTargetUrl>
   </PropertyGroup>
+  <ItemGroup>
+    <DestinationConnectionStrings Include="DefaultConnection">
+      <Value>Data Source=AcfunTools_CommentXuMing.db</Value>
+    </DestinationConnectionStrings>
+  </ItemGroup>
 </Project>
