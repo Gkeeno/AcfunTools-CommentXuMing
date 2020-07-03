@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using System.Collections;
+using System.Net.NetworkInformation;
 
 namespace AcfunTools.CommentXuMing.Crawler
 {
@@ -31,13 +32,15 @@ namespace AcfunTools.CommentXuMing.Crawler
 
         private ConcurrentDictionary<string, CommentFetchContext> _commentFetchContexts = new ConcurrentDictionary<string, CommentFetchContext>();
 
+        private string _crawlerStopNotifyUrl = "";
         static Crawler()
         {
             HttpClient.Timeout = TimeSpan.FromSeconds(5); // 默认是100秒, 为了减少下一波压力设置周期放弃
         }
 
-        public Crawler()
+        public Crawler(string crawlerStopNotifyUrl)
         {
+            _crawlerStopNotifyUrl = crawlerStopNotifyUrl;
         }
 
         public void SetDataConsumeHandle(ConsumeDataHandle handle) =>
@@ -128,6 +131,8 @@ namespace AcfunTools.CommentXuMing.Crawler
         /// <returns></returns>
         private async Task<JObject> FetchArticlesJson_综合区(int retryCount = 0)
         {
+            Console.WriteLine("[Crawler][err] FetchArticlesJson retryCount: {0}", retryCount);
+
             //var queryUrl = $"{CrawlerConstant.url_articleList}?pageNo=1&size=300&originalOnly=false&orderType=2&periodType=-1&filterTitleImage=true";
             var queryUrl = $"{CrawlerConstant.url_articleList}?pageNo=1&size=130&realmIds=5%2C22%2C3%2C4&originalOnly=false&orderType=1&periodType=-1&filterTitleImage=true";
             try
@@ -145,7 +150,7 @@ namespace AcfunTools.CommentXuMing.Crawler
 
                 Console.WriteLine("[Crawler] FetchArticlesJson_综合区 http Fail，重试{0}", retryCount);
                 await Task.Delay(100);
-                return await FetchArticlesJson_综合区(retryCount++);
+                return await FetchArticlesJson_综合区(++retryCount);
             }
         }
         /// <summary>
@@ -172,7 +177,7 @@ namespace AcfunTools.CommentXuMing.Crawler
 
                 Console.WriteLine("[Crawler] FetchArticlesJson_情感区 http Fail，重试{0}", retryCount);
                 await Task.Delay(100);
-                return await FetchArticlesJson_情感区(retryCount++);
+                return await FetchArticlesJson_情感区(++retryCount);
             }
         }
 
@@ -198,8 +203,8 @@ namespace AcfunTools.CommentXuMing.Crawler
 
         private async Task SendServerErrorNotice(string msg = "")
         {
-            var logurl = $"https://sc.ftqq.com/SCU70012T2d9cae3a9ef2addbb1086174331369f35dfc665e633f6.send?text="+ msg;
-            
+            var logurl = $"{_crawlerStopNotifyUrl}{msg}";
+
             var response = await HttpClient.GetAsync(logurl);
             response.EnsureSuccessStatusCode();
             string responseBody = await response.Content.ReadAsStringAsync();

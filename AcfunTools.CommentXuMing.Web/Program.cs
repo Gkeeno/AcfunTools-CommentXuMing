@@ -29,8 +29,9 @@ namespace AcfunTools.CommentXuMing.Web
             try
             {
                 var dbcontext = seviProvider.GetRequiredService<CommentXuMingDbContext>();
+                var config = seviProvider.GetRequiredService<IConfiguration>();
                 var dbSaveLocker = new object();
-                var crawler = new Crawler.Crawler();
+                var crawler = new Crawler.Crawler(config["NotifySendUrl:CrawlerStop"]);
                 crawler.SetDataConsumeHandle((article, comments) =>
                 {
                     Console.WriteLine("Ãþµ½ÁË! ##Title## {0}##comments## >>>>> {1}",
